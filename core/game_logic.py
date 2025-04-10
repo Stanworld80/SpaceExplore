@@ -10,7 +10,7 @@ import time  # Pour le timing non bloquant de l'observer
 from config import (BOARD_SIZE_X, BOARD_SIZE_Y, CELL_SIZE, MOVEMENT_POINTS_PER_TURN,
                     MAX_TOTEMS_PER_PLAYER, SYSTEM_COLORS, FACTION_NAMES,
                     STATE_RUNNING, STATE_GAME_OVER, STATE_PLAYER_TURN, STATE_WAITING_INPUT,
-                    BOARD_OFFSET_X, BOARD_OFFSET_Y, MAX_TURNS, WHITE, RED, BLACK,
+                    BOARD_OFFSET_X, BOARD_OFFSET_Y, MAX_TURNS, ORIGIN_MARKER_COLOR, WHITE, RED, BLACK,
                     GRAY, YELLOW, VIOLET, ORANGE, GREEN, BLUE, ROSE, GRID_WIDTH)
 from core.game_board import GameBoard, SystemePlanetaireCapitale, SystemePlanetairePlanete
 
@@ -98,8 +98,7 @@ class Vaisseau:
             print(f"Entered system at {self.position}. Movement ends.")
             self.movement_points_remaining = 0
             game_board.reveal_system(self.position)
-            # Révélation simultanée de la Carte Relation-Faction
-            # (La fonction _reveal_faction_card est appelée depuis Game)
+            # Révélation simultanée de la Carte Relation-Faction sera gérée par Game.
             return True
         return False
 
@@ -205,7 +204,7 @@ class Game:
         self.action_observer_used = False
         self.movement_used = False
 
-        # Observer mode non bloquant
+        # Mode Observer non bloquant
         self.observer_mode = False
         self.observer_system = None
         self.observer_start_time = None
@@ -307,9 +306,20 @@ class Game:
         self.start_turn()
 
     def find_path(self, start_pos, end_pos, max_dist):
-        """Recherche un chemin entre start_pos et end_pos en utilisant BFS."""
+        """
+        Recherche un chemin entre start_pos et end_pos en utilisant BFS.
+        Refuse les déplacements qui restent à l'intérieur des 4 cases d'un même système.
+        """
+        # Vérifier si start et end appartiennent au même système
+        start_system = self.game_board.get_system_at(start_pos)
+        end_system = self.game_board.get_system_at(end_pos)
+        if start_system and end_system and start_system == end_system:
+            print("Déplacement interne au même système interdit. Ignoré.")
+            return None
+
         if start_pos == end_pos:
             return [start_pos]
+
         q = collections.deque([(start_pos, [start_pos])])
         visited = {start_pos}
         while q:
@@ -322,6 +332,9 @@ class Game:
                     if dx == 0 and dy == 0:
                         continue
                     next_pos = (current_pos[0] + dx, current_pos[1] + dy)
+                    # Refuser le déplacement interne si next_pos appartient au même système que start_pos
+                    if start_system and self.game_board.get_system_at(next_pos) == start_system:
+                        continue
                     if next_pos == end_pos:
                         return path + [next_pos]
                     if self.game_board.is_position_valid(next_pos) and next_pos not in visited:
@@ -330,47 +343,20 @@ class Game:
         return None
 
     def handle_mouse_click(self, mouse_pos):
-        """Gère les clics de souris pour le déplacement ou la sélection en mode observer."""
+        """
+        Désactivation du déplacement par souris.
+        Seul le mode Observer (sélection d'un système caché) reste actif.
+        """
         if self.observer_mode:
             self.observer_select_system(mouse_pos)
-            return
-        if self.game_state != STATE_PLAYER_TURN:
-            return
-        target_grid_pos = screen_to_grid(mouse_pos)
-        if target_grid_pos is None:
-            print("Click outside board.")
-            return
-        player = self.get_player()
-        ship = player.vaisseau
-        start_pos = ship.position
-        if target_grid_pos == start_pos:
-            print("Clicked on current ship position.")
-            return
-        path = self.find_path(start_pos, target_grid_pos, ship.movement_points_remaining)
-        if path:
-            print(f"Path found to {target_grid_pos}: {path}")
-            if not self.movement_used:
-                for i in range(len(path) - 1):
-                    current_step = path[i]
-                    next_step = path[i + 1]
-                    cost = 1
-                    stop_early = ship.move_step(next_step, cost, self.game_board)
-                    if stop_early:
-                        # Après arrêt (entrée dans un système), révéler aussi la carte faction.
-                        system = self.game_board.get_system_at(ship.position)
-                        if system:
-                            self._reveal_faction_card(system.couleur)
-                        break
-                self.movement_used = True
-            else:
-                print("Already moved this turn.")
         else:
-            print(f"No valid path found to {target_grid_pos} within {ship.movement_points_remaining} points.")
+            # Ignorer les clics de souris pour le déplacement.
+            print("Déplacement par souris désactivé.")
 
     def observer_select_system(self, mouse_pos):
         """
         Sélectionne un système caché en mode Observer.
-        La révélation est temporaire (non bloquante) et se cache après 2 secondes.
+        La révélation est temporaire (2 secondes) via un système non bloquant.
         """
         target_grid_pos = screen_to_grid(mouse_pos)
         if target_grid_pos is None:
@@ -383,19 +369,19 @@ class Game:
         if system.revealed:
             print("Observer: System already revealed.")
             return
-        # Démarrer le mode observer non bloquant
         system.revealed = True
         self.observer_system = system
         self.observer_start_time = time.time()
         print(f"Observer: Revealing system at {target_grid_pos} temporarily.")
 
     def handle_input(self, event):
-        """Traite les événements d'entrée (souris et clavier)."""
+        """Traite les événements d'entrée (clavier uniquement pour le déplacement)."""
         if self.game_state != STATE_PLAYER_TURN:
             return
         player = self.get_player()
         ship = player.vaisseau
         if event.type == pygame.MOUSEBUTTONDOWN:
+            # Désactivation de la gestion du clic pour le déplacement
             if event.button == 1:
                 self.handle_mouse_click(event.pos)
         elif event.type == pygame.KEYDOWN:
@@ -418,7 +404,11 @@ class Game:
                 if not self.movement_used:
                     cost = 1
                     target_pos = (ship.position[0] + dx, ship.position[1] + dy)
-                    if ship.movement_points_remaining >= cost and self.game_board.is_position_valid(target_pos):
+                    # Vérifier que le déplacement ne reste pas dans le même système
+                    if self.game_board.get_system_at(ship.position) and \
+                       self.game_board.get_system_at(target_pos) == self.game_board.get_system_at(ship.position):
+                        print("Déplacement interne au même système interdit. Ignoré.")
+                    elif ship.movement_points_remaining >= cost and self.game_board.is_position_valid(target_pos):
                         stop_early = ship.move_step(target_pos, cost, self.game_board)
                         if stop_early:
                             system = self.game_board.get_system_at(ship.position)
@@ -448,7 +438,6 @@ class Game:
                 else:
                     print("Action Influencer déjà utilisée ce tour.")
             elif event.key == pygame.K_o:
-                # Activer Observer seulement s'il existe un système caché
                 hidden_systems = [s for s in self.game_board.systems if not s.revealed]
                 if not hidden_systems:
                     print("Observer: Aucun système caché disponible.")
@@ -488,7 +477,7 @@ class Game:
             print("Action Déposer: Not on a revealed system.")
             return False
         rack = self.system_racks.get(system.couleur)
-        if rack is None: 
+        if rack is None:
             return False
         if player.remove_totem(totem_to_deposit):
             rack['totems'].append(totem_to_deposit)
@@ -515,8 +504,7 @@ class Game:
         return True
 
     def update(self):
-        """Mets à jour l'état du jeu. Gère notamment le mode Observer non bloquant."""
-        # Vérifier si en mode Observer et si 2 secondes se sont écoulées
+        """Mets à jour l'état du jeu et gère le mode Observer non bloquant."""
         if self.observer_mode and self.observer_system and self.observer_start_time:
             if time.time() - self.observer_start_time >= 2:
                 self.observer_system.revealed = False
@@ -533,28 +521,23 @@ class Game:
         y_offset = 10
         x_offset = GRID_WIDTH + BOARD_OFFSET_X + 10  # Début du panneau d'information
 
-        # Affichage du tour
         turn_text = self.font.render(f"Turn: {self.turn_count}/{MAX_TURNS}", True, WHITE)
         surface.blit(turn_text, (x_offset, y_offset))
         y_offset += 30
 
-        # Coordonnées du vaisseau
         coord_text = self.font.render(f"Position: ({ship.position[0]}, {ship.position[1]})", True, WHITE)
         surface.blit(coord_text, (x_offset, y_offset))
         y_offset += 20
 
-        # Points de mouvement
         move_text = self.font.render(f"Move Pts: {ship.movement_points_remaining}/{MOVEMENT_POINTS_PER_TURN}", True, WHITE)
         surface.blit(move_text, (x_offset, y_offset))
         y_offset += 20
 
-        # Score et valeur totale des totems
         total_value = sum(totem.valeur for totem in player.totems)
         score_text = self.font.render(f"Score: {player.calculate_score()} (Totems: {total_value})", True, WHITE)
         surface.blit(score_text, (x_offset, y_offset))
         y_offset += 30
 
-        # Affichage des totems collectés
         totem_title = self.font.render(f"Totems ({len(player.totems)}/{MAX_TOTEMS_PER_PLAYER}):", True, WHITE)
         surface.blit(totem_title, (x_offset, y_offset))
         y_offset += 20
@@ -571,7 +554,6 @@ class Game:
             if i >= 8: break
         y_offset += 10
 
-        # Informations sur le joueur : couleur et conditions de victoire
         player_info = self.font_small.render(f"Votre Couleur: {player.couleur}", True, WHITE)
         surface.blit(player_info, (x_offset, y_offset))
         y_offset += 16
@@ -581,7 +563,6 @@ class Game:
         surface.blit(victory_info, (x_offset, y_offset))
         y_offset += 30
 
-        # Statut des actions utilisées ce tour
         y_start_actions = y_offset
         action_title = self.font_small.render("Actions (Utilisées):", True, WHITE)
         surface.blit(action_title, (x_offset, y_offset))
@@ -599,13 +580,11 @@ class Game:
             surface.blit(status_surf, (x_offset + 5, y_offset))
             y_offset += 16
 
-        # Aide visuelle supplémentaire
         y_offset = y_start_actions
         x_offset_help = x_offset + 100
         help_text = [
             "Contrôles:",
-            " Clic: Déplacer / Observer",
-            " Flèches/PavNum: Bouger",
+            " Clavier: Déplacement",
             " R/D/I/O: Actions",
             " ESPACE: Fin Tour"
         ]
@@ -614,7 +593,6 @@ class Game:
             surface.blit(help_surf, (x_offset_help, y_offset))
             y_offset += 16
 
-        # Message Game Over
         if self.game_state == STATE_GAME_OVER:
             go_font = pygame.font.Font(None, 50)
             go_text_1 = go_font.render("GAME OVER", True, RED)
@@ -642,17 +620,15 @@ class Game:
     def check_game_over(self):
         """
         Vérifie les conditions de fin de partie.
-        Fin automatique du jeu si le tour maximal est dépassé
+        Fin automatique si le tour maximal est dépassé
         ou si le joueur est sur son système d'origine et remplit une condition de victoire.
         """
-        # Fin sur limite de tours
         if self.turn_count > MAX_TURNS:
             if self.game_state != STATE_GAME_OVER:
                 self.game_state = STATE_GAME_OVER
                 print(f"\n!!! GAME OVER !!! Turn limit ({MAX_TURNS}) reached!")
                 self._calculate_final_scores()
             return True
-        # Fin si le joueur est sur son système d'origine et remplit les conditions de victoire
         player = self.get_player()
         ship_pos = player.vaisseau.position
         system = self.game_board.get_system_at(ship_pos)
