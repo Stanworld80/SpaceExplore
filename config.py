@@ -27,9 +27,9 @@ SCREEN_HEIGHT = 768
 INFO_PANEL_WIDTH = 200  # Largeur du panneau d'information
 
 # --- Game Board ---
-BOARD_SIZE_X = 24
-BOARD_SIZE_Y = 24
-CELL_SIZE = 25  # Taille de chaque cellule en pixels
+BOARD_SIZE_X = 28
+BOARD_SIZE_Y = 28
+CELL_SIZE = 20  # Taille de chaque cellule en pixels
 GRID_WIDTH = BOARD_SIZE_X * CELL_SIZE
 GRID_HEIGHT = BOARD_SIZE_Y * CELL_SIZE
 BOARD_OFFSET_X = 50  # Décalage par rapport au bord gauche
@@ -37,9 +37,9 @@ BOARD_OFFSET_Y = 50  # Décalage par rapport au bord supérieur
 
 # --- Systems ---
 SYSTEM_SIZE = 2  # Les systèmes occupent 2x2 cellules
-MIN_SYSTEM_DISTANCE = 3  # Distance minimale (en cellules, Chebyshev) entre centres de systèmes
+MIN_SYSTEM_DISTANCE = 4  # Distance minimale (en cellules, Chebyshev) entre centres de systèmes
 NUM_CAPITAL_SYSTEMS = 7
-NUM_PLANET_SYSTEMS = 8
+NUM_PLANET_SYSTEMS = 2
 
 # --- Player & Movement ---
 MAX_TOTEMS_PER_PLAYER = 9

@@ -11,7 +11,7 @@ from config import (BOARD_SIZE_X, BOARD_SIZE_Y, CELL_SIZE, MOVEMENT_POINTS_PER_T
                     MAX_TOTEMS_PER_PLAYER, SYSTEM_COLORS, FACTION_NAMES,
                     STATE_RUNNING, STATE_GAME_OVER, STATE_PLAYER_TURN,
                     BOARD_OFFSET_X, BOARD_OFFSET_Y, MAX_TURNS, WHITE, RED, BLACK,
-                    GRAY, YELLOW, VIOLET, ORANGE, GREEN, BLUE, ROSE, GRID_WIDTH)
+                    GRAY, YELLOW, VIOLET, ORANGE, GREEN, BLUE, ROSE, GRID_WIDTH, NUM_PLANET_SYSTEMS)
 from core.game_board import GameBoard, SystemePlanetaireCapitale, SystemePlanetairePlanete
 
 # --- Faction Definitions ---
@@ -35,6 +35,7 @@ SYSTEM_FACTION_DATA = {
     ROSE: {"A": 4, "D": 2, "E": 1},
 }
 
+
 # --- Helper Function ---
 def screen_to_grid(screen_pos):
     """Convertit les coordonnées pixels en coordonnées de grille."""
@@ -42,12 +43,14 @@ def screen_to_grid(screen_pos):
     grid_x = (x - BOARD_OFFSET_X) // CELL_SIZE
     grid_y = (y - BOARD_OFFSET_Y) // CELL_SIZE
     if 0 <= grid_x < BOARD_SIZE_X and 0 <= grid_y < BOARD_SIZE_Y:
-        return (grid_x, grid_y)
+        return grid_x, grid_y
     return None
+
 
 # --- Classes ---
 class Totem:
     """Représente un totem appartenant à une faction et couleur spécifiques."""
+
     def __init__(self, faction_id, couleur):
         if faction_id not in FACTIONS:
             raise ValueError(f"Invalid faction ID: {faction_id}")
@@ -62,8 +65,10 @@ class Totem:
         c_repr = color_name[0] if color_name else str(self.couleur)
         return f"Totem({self.faction_id}, {c_repr})"
 
+
 class FactionCard:
     """Représente une carte 'Relation-Faction'."""
+
     def __init__(self, faction_id, system_color):
         self.faction_id = faction_id
         self.system_color = system_color
@@ -73,8 +78,10 @@ class FactionCard:
         c_repr = color_name[0] if color_name else str(self.system_color)
         return f"Card({self.faction_id}, {c_repr})"
 
+
 class Vaisseau:
     """Représente le vaisseau du joueur."""
+
     def __init__(self, position, couleur):
         self.position = position  # Coordonnées en grille
         self.couleur = couleur
@@ -110,8 +117,10 @@ class Vaisseau:
         pygame.draw.circle(surface, self.couleur, (px, py), radius)
         pygame.draw.circle(surface, WHITE, (px, py), radius, 1)
 
+
 class Player:
     """Représente le joueur (mode solo)."""
+
     def __init__(self, player_id, couleur):
         self.id = player_id
         self.couleur = couleur  # Couleur du vaisseau et du joueur
@@ -187,8 +196,10 @@ class Player:
                 return True
         return False
 
+
 class Game:
     """Gère l'état global du jeu, les tours et les interactions."""
+
     def __init__(self, num_players=1):
         self.num_players = 1  # Mode solo
         self.game_board = GameBoard(BOARD_SIZE_X, BOARD_SIZE_Y)
@@ -242,7 +253,7 @@ class Game:
                 sys.is_player_origin = True
                 print(f"Marked {color} as player origin.")
             capital_systems.append(sys)
-        planet_systems = [SystemePlanetairePlanete(random.choice(SYSTEM_COLORS)) for _ in range(8)]
+        planet_systems = [SystemePlanetairePlanete(random.choice(SYSTEM_COLORS)) for _ in range(NUM_PLANET_SYSTEMS)]
         # Placement des systèmes sur le plateau
         self.game_board.place_initial_systems(capital_systems, planet_systems)
         for sys in self.game_board.systems:
@@ -408,7 +419,7 @@ class Game:
                     target_pos = (ship.position[0] + dx, ship.position[1] + dy)
                     # Vérifier que le déplacement ne reste pas dans le même système
                     if self.game_board.get_system_at(ship.position) and \
-                       self.game_board.get_system_at(target_pos) == self.game_board.get_system_at(ship.position):
+                            self.game_board.get_system_at(target_pos) == self.game_board.get_system_at(ship.position):
                         print("Déplacement interne au même système interdit. Ignoré.")
                     elif ship.movement_points_remaining >= cost and self.game_board.is_position_valid(target_pos):
                         stop_early = ship.move_step(target_pos, cost, self.game_board)
@@ -520,7 +531,7 @@ class Game:
                 self.observer_system = None
                 self.observer_start_time = None
 
-      def draw_ui(self, surface):
+    def draw_ui(self, surface):
         """Dessine l'interface utilisateur avec infos détaillées pour le joueur et les systèmes révélés."""
         player = self.get_player()
         ship = player.vaisseau
@@ -536,7 +547,8 @@ class Game:
         surface.blit(coord_text, (x_offset, y_offset))
         y_offset += 20
 
-        move_text = self.font.render(f"Move Pts: {ship.movement_points_remaining}/{MOVEMENT_POINTS_PER_TURN}", True, WHITE)
+        move_text = self.font.render(f"Move Pts: {ship.movement_points_remaining}/{MOVEMENT_POINTS_PER_TURN}", True,
+                                     WHITE)
         surface.blit(move_text, (x_offset, y_offset))
         y_offset += 20
 
