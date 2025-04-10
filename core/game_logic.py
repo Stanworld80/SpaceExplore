@@ -9,8 +9,8 @@ import collections  # Pour BFS
 import time  # Pour le timing non bloquant de l'observer
 from config import (BOARD_SIZE_X, BOARD_SIZE_Y, CELL_SIZE, MOVEMENT_POINTS_PER_TURN,
                     MAX_TOTEMS_PER_PLAYER, SYSTEM_COLORS, FACTION_NAMES,
-                    STATE_RUNNING, STATE_GAME_OVER, STATE_PLAYER_TURN, STATE_WAITING_INPUT,
-                    BOARD_OFFSET_X, BOARD_OFFSET_Y, MAX_TURNS, ORIGIN_MARKER_COLOR, WHITE, RED, BLACK,
+                    STATE_RUNNING, STATE_GAME_OVER, STATE_PLAYER_TURN,
+                    BOARD_OFFSET_X, BOARD_OFFSET_Y, MAX_TURNS, WHITE, RED, BLACK,
                     GRAY, YELLOW, VIOLET, ORANGE, GREEN, BLUE, ROSE, GRID_WIDTH)
 from core.game_board import GameBoard, SystemePlanetaireCapitale, SystemePlanetairePlanete
 
