@@ -520,13 +520,14 @@ class Game:
                 self.observer_system = None
                 self.observer_start_time = None
 
-    def draw_ui(self, surface):
-        """Dessine l'interface utilisateur avec infos détaillées pour le joueur."""
+      def draw_ui(self, surface):
+        """Dessine l'interface utilisateur avec infos détaillées pour le joueur et les systèmes révélés."""
         player = self.get_player()
         ship = player.vaisseau
         y_offset = 10
         x_offset = GRID_WIDTH + BOARD_OFFSET_X + 10  # Début du panneau d'information
 
+        # Informations du joueur
         turn_text = self.font.render(f"Turn: {self.turn_count}/{MAX_TURNS}", True, WHITE)
         surface.blit(turn_text, (x_offset, y_offset))
         y_offset += 30
@@ -569,6 +570,30 @@ class Game:
         surface.blit(victory_info, (x_offset, y_offset))
         y_offset += 30
 
+        # Informations sur les systèmes révélés pour chaque couleur
+        header = self.font_small.render("Systèmes:", True, WHITE)
+        surface.blit(header, (x_offset, y_offset))
+        y_offset += 16
+        for color in SYSTEM_COLORS:
+            # Vérifier s'il existe un système capitale de cette couleur révélé
+            revealed = False
+            for system in self.game_board.systems:
+                if system.est_capitale and system.couleur == color and system.revealed:
+                    revealed = True
+                    break
+            if revealed:
+                # Afficher la faction du haut du rack et le total des totems restants
+                rack = self.system_racks.get(color)
+                top_faction = rack['faction_cards'][0].faction_id if rack and rack['faction_cards'] else "N/A"
+                totem_count = len(rack['totems']) if rack else 0
+                info_text = f"{color}: {top_faction} - {totem_count} totems"
+            else:
+                info_text = f"{color}: non-révélé"
+            info_surf = self.font_small.render(info_text, True, WHITE)
+            surface.blit(info_surf, (x_offset + 5, y_offset))
+            y_offset += 16
+
+        # Statut des actions utilisées ce tour
         y_start_actions = y_offset
         action_title = self.font_small.render("Actions (Utilisées):", True, WHITE)
         surface.blit(action_title, (x_offset, y_offset))
@@ -581,8 +606,8 @@ class Game:
             (f"Move", self.movement_used),
         ]
         for text, used in actions_status:
-            color = GRAY if used else WHITE
-            status_surf = self.font_small.render(text, True, color)
+            color_status = GRAY if used else WHITE
+            status_surf = self.font_small.render(text, True, color_status)
             surface.blit(status_surf, (x_offset + 5, y_offset))
             y_offset += 16
 
