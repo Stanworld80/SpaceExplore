@@ -16,6 +16,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (128, 128, 128)
 DARK_GRAY = (50, 50, 50)
+ORIGIN_MARKER_COLOR = RED
 
 # --- Colors for systems (and possible player token colors) ---
 SYSTEM_COLORS = [YELLOW, RED, VIOLET, ORANGE, GREEN, BLUE, ROSE]
