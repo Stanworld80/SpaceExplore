@@ -8,6 +8,7 @@ from config import (BOARD_SIZE_X, BOARD_SIZE_Y, CELL_SIZE, SYSTEM_SIZE,
                     MIN_SYSTEM_DISTANCE, WHITE, GRAY, DARK_GRAY,
                     BOARD_OFFSET_X, BOARD_OFFSET_Y, YELLOW, BLACK, RED)
 
+
 class GameBoard:
     """Represents the game board grid and the systems placed on it."""
 
@@ -116,7 +117,8 @@ class GameBoard:
         system = self.get_system_at(position)
         if system and not system.revealed:
             system.revealed = True
-            print(f"System at {system.position} revealed: Color {system.couleur}, Type: {'Capitale' if system.est_capitale else 'Planete'}")
+            print(
+                f"System at {system.position} revealed: Color {system.couleur}, Type: {'Capitale' if system.est_capitale else 'Planete'}")
             return system
         return None
 
@@ -165,6 +167,7 @@ class SystemePlanetaire:
                 pygame.draw.rect(surface, DARK_GRAY, rect)
                 pygame.draw.rect(surface, GRAY, rect, 1)
 
+
 class SystemePlanetaireCapitale(SystemePlanetaire):
     """Représente un système planétaire Capitale."""
 
@@ -188,6 +191,7 @@ class SystemePlanetaireCapitale(SystemePlanetaire):
             if getattr(self, 'is_player_origin', False):
                 outline_rect = pygame.Rect(px - 2, py - 2, SYSTEM_SIZE * CELL_SIZE + 4, SYSTEM_SIZE * CELL_SIZE + 4)
                 pygame.draw.rect(surface, RED, outline_rect, 3)
+
 
 class SystemePlanetairePlanete(SystemePlanetaire):
     """Représente un système planétaire non-capitale."""
