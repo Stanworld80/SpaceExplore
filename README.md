@@ -13,7 +13,6 @@ Chaque joueur incarne un commandant spatial : collecter des totems en explorant 
 - *Joueur* : Couleur de vaisseau aléatoire parmi 7 ; le Système d’Origine correspond à cette couleur ; placement du vaisseau sur un système au hasard lors du setup (peut être sur le Système d’Origine).
 - *Factions* : 6 factions ABCDEF , réparties dans les rack de couleur correpondante:
 
-+----------+---------------------------------------|
 | Couleur  | Factions (avec nombre)                |
 |----------|----------------------------------------|
 | Jaune    | A (6), B (1)                          |
@@ -23,7 +22,7 @@ Chaque joueur incarne un commandant spatial : collecter des totems en explorant 
 | Vert     | A (3), C (1), D (1), E (2)            |
 | Bleu     | A (1), B (1), C (1), D (2), E (1), F (1) |
 | Rose     | A (4), D (2), E (1)                   |
-----------------------------------------------------
+
 
 ---
 
