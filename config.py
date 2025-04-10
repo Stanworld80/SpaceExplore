@@ -18,6 +18,29 @@ GRAY = (128, 128, 128)
 DARK_GRAY = (50, 50, 50)
 ORIGIN_MARKER_COLOR = RED
 
+
+
+# --- Faction Definitions ---
+FACTIONS = {
+    "A": {"nom": "ACTOS", "valeur": 80, "logo": "Losange"},
+    "B": {"nom": "B.O.", "valeur": 1000, "logo": "Triangle"},
+    "C": {"nom": "Confrerie Cursarius", "valeur": 750, "logo": "Clepsydre"},
+    "D": {"nom": "Demos Vita", "valeur": 150, "logo": "Croix"},
+    "E": {"nom": "Esperio Scientus", "valeur": 300, "logo": "Cercles"},
+    "F": {"nom": "Frea Totis", "valeur": 500, "logo": "Carré"},
+}
+
+# --- Totem & Faction Card Distribution ---
+SYSTEM_FACTION_DATA = {
+    YELLOW: {"A": 6, "B": 1},
+    RED: {"C": 2, "D": 5},
+    VIOLET: {"E": 4, "F": 3},
+    ORANGE: {"A": 4, "B": 1, "D": 1, "F": 1},
+    GREEN: {"A": 3, "C": 1, "D": 1, "E": 2},
+    BLUE: {"A": 1, "B": 1, "C": 1, "D": 2, "E": 1, "F": 1},
+    ROSE: {"A": 4, "D": 2, "E": 1},
+}
+
 # --- Colors for systems (and possible player token colors) ---
 SYSTEM_COLORS = [YELLOW, RED, VIOLET, ORANGE, GREEN, BLUE, ROSE]
 
