@@ -9,7 +9,8 @@ Chaque joueur incarne un commandant spatial : collecter des totems en explorant 
 
 **Mise en Place**  
 - *Plateau* : Grille de 24×24 cases ; placement aléatoire de 7 systèmes Capitale (2×2 cases) et 8 systèmes Planète, en respectant les distances minimales.  
-- *Systèmes* : Chaque système Capitale possède un rack avec cartes « Relation-Faction » et un stock de totems répartis par faction.  
+- *Systèmes* : Chaque système Capitale possède un rack avec cartes « Relation-Faction » et un stock de totems répartis par faction.
+- *Factions* : 6 factions ABCDEF , réparti dans les rack de couleur correpondante
 - *Joueur* : Couleur de vaisseau aléatoire parmi 7 ; le Système d’Origine correspond à cette couleur ; placement du vaisseau sur un système au hasard lors du setup (peut être sur le Système d’Origine).
 
 ---
