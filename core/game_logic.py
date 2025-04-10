@@ -488,7 +488,7 @@ class Game:
             print("Action Déposer: Not on a revealed system.")
             return False
         rack = self.system_racks.get(system.couleur)
-        if rack is None:
+        if rack is None: 
             return False
         if player.remove_totem(totem_to_deposit):
             rack['totems'].append(totem_to_deposit)
