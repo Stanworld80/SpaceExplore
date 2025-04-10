@@ -5,7 +5,7 @@ Initializes Pygame, creates the Game object, and runs the main game loop.
 """
 import pygame
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, BLACK, STATE_GAME_OVER
-from core.game_logic import Game
+from core.game_state import Game
 
 
 def main():

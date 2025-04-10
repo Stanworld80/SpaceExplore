@@ -6,7 +6,7 @@ import time  # Pour le timing non bloquant de l'observer
 from config import (STATE_GAME_OVER,BOARD_SIZE_X, BOARD_SIZE_Y, CELL_SIZE, FACTION_NAMES, WHITE,NUM_PLANET_SYSTEMS,MAX_TURNS, GREEN, GRAY,MOVEMENT_POINTS_PER_TURN,MAX_TOTEMS_PER_PLAYER,
                     BOARD_OFFSET_X, BOARD_OFFSET_Y, BLACK, RED,SYSTEM_COLORS,STATE_RUNNING,SYSTEM_FACTION_DATA,STATE_PLAYER_TURN,GRID_WIDTH)
 from core.game_board import GameBoard, SystemePlanetaireCapitale, SystemePlanetairePlanete
-from game_entities import (Totem, FactionCard,Vaisseau )
+from .game_entities import (Totem, FactionCard,Vaisseau )
 
 
 # --- Helper Function ---
