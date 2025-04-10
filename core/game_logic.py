@@ -350,7 +350,6 @@ class Game:
         if self.observer_mode:
             self.observer_select_system(mouse_pos)
         else:
-            # Ignorer les clics de souris pour le déplacement.
             print("Déplacement par souris désactivé.")
 
     def observer_select_system(self, mouse_pos):
@@ -375,7 +374,10 @@ class Game:
         print(f"Observer: Revealing system at {target_grid_pos} temporarily.")
 
     def handle_input(self, event):
-        """Traite les événements d'entrée (clavier uniquement pour le déplacement)."""
+        """
+        Traite les événements d'entrée (clavier uniquement pour le déplacement).
+        La souris est désactivée pour le déplacement.
+        """
         if self.game_state != STATE_PLAYER_TURN:
             return
         player = self.get_player()
@@ -438,12 +440,16 @@ class Game:
                 else:
                     print("Action Influencer déjà utilisée ce tour.")
             elif event.key == pygame.K_o:
-                hidden_systems = [s for s in self.game_board.systems if not s.revealed]
-                if not hidden_systems:
-                    print("Observer: Aucun système caché disponible.")
+                # Observer ne peut être exécuté qu'une seule fois par tour.
+                if self.action_observer_used:
+                    print("Action Observer déjà utilisée ce tour.")
                 else:
-                    print("Mode Observer activé : Cliquez sur un système caché.")
-                    self.observer_mode = True
+                    hidden_systems = [s for s in self.game_board.systems if not s.revealed]
+                    if not hidden_systems:
+                        print("Observer: Aucun système caché disponible.")
+                    else:
+                        print("Mode Observer activé : Cliquez sur un système caché.")
+                        self.observer_mode = True
             elif event.key == pygame.K_SPACE:
                 self.end_turn()
 
