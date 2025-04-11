@@ -71,7 +71,7 @@ BOARD_OFFSET_Y = 50  # Décalage par rapport au bord supérieur
 SYSTEM_SIZE = 2  # Les systèmes occupent 2x2 cellules
 MIN_SYSTEM_DISTANCE = 4  # Distance minimale (en cellules, Chebyshev) entre centres de systèmes
 NUM_CAPITAL_SYSTEMS = 7
-NUM_PLANET_SYSTEMS = 2
+NUM_PLANET_SYSTEMS = 4
 
 # --- Player & Movement ---
 MAX_TOTEMS_PER_PLAYER = 9

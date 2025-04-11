@@ -62,10 +62,10 @@ class Player:
             faction_counts[totem.faction_id] = faction_counts.get(totem.faction_id, 0) + 1
         for count in color_counts.values():
             if count >= 3:
-                self.score += 100
+                self.score += 1000
         for count in faction_counts.values():
             if count >= 3:
-                self.score += 100
+                self.score += 1000
         return self.score
 
     def check_victory_conditions(self):
@@ -268,24 +268,33 @@ class Game:
 
     def observer_select_system(self, mouse_pos):
         """
-        Sélectionne un système caché en mode Observer.
-        La révélation est temporaire (2 secondes) via un système non bloquant.
+        Mode Observer : sélection unique d’un système caché,
+        affiché temporairement (2 sec), une seule fois par tour.
         """
+        if self.action_observer_used:
+            print("Observer: Action déjà utilisée ce tour.")
+            return
+        if self.observer_system is not None:
+            print("Observer: Observation en cours.")
+            return
+
         target_grid_pos = screen_to_grid(mouse_pos)
         if target_grid_pos is None:
-            print("Observer: Click outside board.")
+            print("Observer: Clic hors du plateau.")
             return
+
         system = self.game_board.get_system_at(target_grid_pos)
-        if not system:
-            print("Observer: No system at clicked position.")
+        if not system or system.revealed:
+            print("Observer: Système invalide ou déjà révélé.")
             return
-        if system.revealed:
-            print("Observer: System already revealed.")
-            return
+
+        # Révélation temporaire
         system.revealed = True
         self.observer_system = system
         self.observer_start_time = time.time()
-        print(f"Observer: Revealing system at {target_grid_pos} temporarily.")
+        self.action_observer_used = True  # Verrouille l'action pour le tour
+        self.observer_mode = False  # Sort du mode observer immédiatement
+        print(f"Observer: Système temporairement révélé à {target_grid_pos}.")
 
     def handle_input(self, event):
         """
@@ -424,13 +433,11 @@ class Game:
         return True
 
     def update(self):
-        """Mets à jour l'état du jeu et gère le mode Observer non bloquant."""
-        if self.observer_mode and self.observer_system and self.observer_start_time:
+        """Mise à jour du jeu, y compris la gestion du retour en mode caché de l'observer."""
+        if self.observer_system and self.observer_start_time:
             if time.time() - self.observer_start_time >= 2:
                 self.observer_system.revealed = False
-                print(f"Observer: Hiding system at {self.observer_system.position} after temporary reveal.")
-                self.observer_mode = False
-                self.action_observer_used = True
+                print(f"Observer: Masquage du système à {self.observer_system.position}.")
                 self.observer_system = None
                 self.observer_start_time = None
 
@@ -479,7 +486,7 @@ class Game:
         y_offset += 10
 
         # Affichage des informations personnelles du joueur
-        player_info = self.font_small.render(f"Votre Couleur: {get_color_name(player.couleur)}", True, WHITE)
+        player_info = self.font_small.render(f"Votre Couleur: {get_color_name(player.couleur)}", True, player.couleur)
         surface.blit(player_info, (x_offset, y_offset))
         y_offset += 16
 
@@ -494,18 +501,33 @@ class Game:
         surface.blit(header, (x_offset, y_offset))
         y_offset += 16
         for color in SYSTEM_COLORS:
-            # Vérifier s'il existe un système Capitale de cette couleur qui a été révélé
+            color_name = get_color_name(color)
             revealed = any(system.est_capitale and system.couleur == color and system.revealed
                            for system in self.game_board.systems)
+
             if revealed:
                 rack = self.system_racks.get(color)
-                top_faction = rack['faction_cards'][0].faction_id if rack and rack['faction_cards'] else "N/A"
-                totem_count = len(rack['totems']) if rack else 0
-                info_text = f"{get_color_name(color)}: {top_faction} - {totem_count} totems"
+                faction_cards = rack['faction_cards'] if rack else []
+                totems = rack['totems'] if rack else []
+
+                top_faction = faction_cards[0].faction_id if faction_cards else "N/A"
+
+                # Rendu du préfixe : "YELLOW : A -"
+                prefix_text = f"{color_name}: {top_faction} - "
+                prefix_surf = self.font_small.render(prefix_text, True, WHITE)
+                surface.blit(prefix_surf, (x_offset + 5, y_offset))
+
+                # Affichage de chaque lettre avec la couleur du système
+                letter_x = x_offset + 5 + prefix_surf.get_width()
+                for t in totems:
+                    faction_letter = self.font_small.render(t.faction_id, True, t.couleur)
+                    surface.blit(faction_letter, (letter_x, y_offset))
+                    letter_x += faction_letter.get_width() + 1
             else:
-                info_text = f"{get_color_name(color)}: non-révélé"
-            info_surf = self.font_small.render(info_text, True, WHITE)
-            surface.blit(info_surf, (x_offset + 5, y_offset))
+                info_text = f"{color_name}: non-révélé"
+                info_surf = self.font_small.render(info_text, True, WHITE)
+                surface.blit(info_surf, (x_offset + 5, y_offset))
+
             y_offset += 16
 
         # Statut des actions utilisées ce tour

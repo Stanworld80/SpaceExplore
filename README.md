@@ -1,5 +1,5 @@
 # SpaceExplore
-a simple video game
+A simple video game
 ---
 
 **But du jeu**  
@@ -46,6 +46,6 @@ La partie se termine si :
 - Ou après 40 tours (ou si tous les autres joueurs abandonnent).
 
 **Scoring**  
-Le score est la somme des valeurs propres des totems + 100 points de bonus pour chaque groupe de 3 (ou plus) totems identiques par couleur ou par faction.
+Le score est la somme des valeurs propres des totems + 1000 points de bonus pour chaque groupe de 3 (ou plus) totems identiques par couleur ou par faction.
 
 ---
