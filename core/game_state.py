@@ -30,7 +30,7 @@ class Player:
         self.origin_system_color = couleur  # Système d'origine (correspond à la couleur)
         self.vaisseau = None
         self.totems = []  # Liste des totems collectés
-        self.score = 0
+        self.score = 5000
 
     def add_totem(self, totem):
         """Ajoute un totem à l'inventaire du joueur s'il y a de la place."""
@@ -53,20 +53,20 @@ class Player:
             return False
 
     def calculate_score(self):
-        """Calcule le score du joueur en fonction des totems collectés et des bonus."""
-        self.score = sum(totem.valeur for totem in self.totems)
+        """Calcule les points des totems + bonus, sans réinitialiser le score global."""
+        score_totems = sum(t.valeur for t in self.totems)
+
         color_counts = {}
         faction_counts = {}
-        for totem in self.totems:
-            color_counts[totem.couleur] = color_counts.get(totem.couleur, 0) + 1
-            faction_counts[totem.faction_id] = faction_counts.get(totem.faction_id, 0) + 1
-        for count in color_counts.values():
-            if count >= 3:
-                self.score += 1000
-        for count in faction_counts.values():
-            if count >= 3:
-                self.score += 1000
-        return self.score
+        for t in self.totems:
+            color_counts[t.couleur] = color_counts.get(t.couleur, 0) + 1
+            faction_counts[t.faction_id] = faction_counts.get(t.faction_id, 0) + 1
+
+        bonus = 0
+        bonus += sum(1000 for c in color_counts.values() if c >= 3)
+        bonus += sum(10.0 for f in faction_counts.values() if f >= 3)
+
+        return score_totems + bonus
 
     def check_victory_conditions(self):
         """
@@ -213,10 +213,15 @@ class Game:
             return
 
     def end_turn(self):
-        """Termine le tour courant et en débute un nouveau."""
+        """Fin du tour du joueur : pénalité de score et passage au tour suivant."""
         if self.game_state != STATE_PLAYER_TURN:
             return
-        print("Ending turn.")
+        player = self.get_player()
+
+        # Appliquer la pénalité
+        player.score = max(0, player.score - 100)
+        print(f"Pénalité de fin de tour : -100 points. Score actuel : {player.score}")
+
         self.start_turn()
 
     def find_path(self, start_pos, end_pos, max_dist):
@@ -462,8 +467,10 @@ class Game:
         surface.blit(move_text, (x_offset, y_offset))
         y_offset += 20
 
-        total_value = sum(totem.valeur for totem in player.totems)
-        score_text = self.font.render(f"Score: {player.calculate_score()} (Totems: {total_value})", True, WHITE)
+        base = player.score
+        bonus = player.calculate_score()
+        total_score = base + bonus
+        score_text = self.font.render(f"Score: {total_score} (Base: {base}, Bonus: {bonus})", True, WHITE)
         surface.blit(score_text, (x_offset, y_offset))
         y_offset += 30
 
@@ -565,7 +572,7 @@ class Game:
             go_font = pygame.font.Font(None, 50)
             go_text_1 = go_font.render("GAME OVER", True, RED)
             score_font = pygame.font.Font(None, 40)
-            final_score = player.calculate_score()
+            final_score = player.calculate_score() + player.score
             go_text_2 = score_font.render(f"Score Final: {final_score}", True, WHITE)
             center_x = BOARD_OFFSET_X + (BOARD_SIZE_X * CELL_SIZE) // 2
             center_y = BOARD_OFFSET_Y + (BOARD_SIZE_Y * CELL_SIZE) // 2

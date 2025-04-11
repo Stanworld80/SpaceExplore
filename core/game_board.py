@@ -4,7 +4,7 @@ Manages the game board, systems, and their placement and drawing.
 """
 import pygame
 import random
-from config import (BOARD_SIZE_X, BOARD_SIZE_Y, CELL_SIZE, SYSTEM_SIZE,
+from config import (CELL_SIZE, SYSTEM_SIZE,
                     MIN_SYSTEM_DISTANCE, WHITE, GRAY, DARK_GRAY,
                     BOARD_OFFSET_X, BOARD_OFFSET_Y, YELLOW, BLACK, RED)
 

@@ -46,6 +46,7 @@ La partie se termine si :
 - Ou après 40 tours (ou si tous les autres joueurs abandonnent).
 
 **Scoring**  
+chaque joueur commence avec 5000 point et perds 100 points automatiquement à chaque tour
 Le score est la somme des valeurs propres des totems + 1000 points de bonus pour chaque groupe de 3 (ou plus) totems identiques par couleur ou par faction.
 
 ---
