@@ -6,9 +6,9 @@ import pygame
 import random
 from core.game_board import GameBoard, SystemePlanetaireCapitale, SystemePlanetairePlanete
 
-from config import (  CELL_SIZE,MOVEMENT_POINTS_PER_TURN,
-                     WHITE,FACTIONS, 
-                    BOARD_OFFSET_X, BOARD_OFFSET_Y)
+from config import (CELL_SIZE, MOVEMENT_POINTS_PER_TURN,
+                    WHITE, FACTIONS,
+                    BOARD_OFFSET_X, BOARD_OFFSET_Y, COLOR_NAME_MAP)
 
 
 class Totem:
@@ -24,9 +24,8 @@ class Totem:
         self.logo = FACTIONS[faction_id]["logo"]
 
     def __repr__(self):
-        color_name = [k for k, v in globals().items() if v == self.couleur]
-        c_repr = color_name[0] if color_name else str(self.couleur)
-        return f"Totem({self.faction_id}, {c_repr})"
+            c_repr = COLOR_NAME_MAP.get(self.couleur, str(self.couleur))
+            return f"Totem({self.faction_id}, {c_repr})"
 
 
 class FactionCard:

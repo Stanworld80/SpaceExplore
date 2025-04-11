@@ -19,6 +19,15 @@ DARK_GRAY = (50, 50, 50)
 ORIGIN_MARKER_COLOR = RED
 
 
+COLOR_NAME_MAP = {
+    YELLOW:  "YELLOW",
+    RED:     "RED",
+    VIOLET:  "VIOLET",
+    ORANGE:  "ORANGE",
+    GREEN:   "GREEN",
+    BLUE:    "BLUE",
+    ROSE:    "ROSE",
+}
 
 # --- Faction Definitions ---
 FACTIONS = {

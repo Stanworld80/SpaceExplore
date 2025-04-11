@@ -6,6 +6,7 @@ import time  # Pour le timing non bloquant de l'observer
 from config import (STATE_GAME_OVER,BOARD_SIZE_X, BOARD_SIZE_Y, CELL_SIZE, FACTION_NAMES, WHITE,NUM_PLANET_SYSTEMS,MAX_TURNS, GREEN, GRAY,MOVEMENT_POINTS_PER_TURN,MAX_TOTEMS_PER_PLAYER,
                     BOARD_OFFSET_X, BOARD_OFFSET_Y, BLACK, RED,SYSTEM_COLORS,STATE_RUNNING,SYSTEM_FACTION_DATA,STATE_PLAYER_TURN,GRID_WIDTH)
 from core.game_board import GameBoard, SystemePlanetaireCapitale, SystemePlanetairePlanete
+from utils import get_color_name
 from .game_entities import (Totem, FactionCard,Vaisseau )
 
 
@@ -438,7 +439,7 @@ class Game:
         player = self.get_player()
         ship = player.vaisseau
         y_offset = 10
-        x_offset = GRID_WIDTH + BOARD_OFFSET_X + 10  # Début du panneau d'information
+        x_offset = GRID_WIDTH + BOARD_OFFSET_X + 10  # Panneau d'information
 
         # Informations du joueur
         turn_text = self.font.render(f"Turn: {self.turn_count}/{MAX_TURNS}", True, WHITE)
@@ -459,12 +460,13 @@ class Game:
         surface.blit(score_text, (x_offset, y_offset))
         y_offset += 30
 
+        # Affichage des totems collectés
         totem_title = self.font.render(f"Totems ({len(player.totems)}/{MAX_TOTEMS_PER_PLAYER}):", True, WHITE)
         surface.blit(totem_title, (x_offset, y_offset))
         y_offset += 20
         for i, totem in enumerate(player.totems):
-            color_name = [k for k, v in globals().items() if v == totem.couleur]
-            c_repr = color_name[0] if color_name else f"C{totem.couleur}"
+            # Utilisation de la fonction get_color_name pour obtenir le nom de la couleur
+            c_repr = get_color_name(totem.couleur)
             totem_repr = f" - {totem.faction_id} ({c_repr})"
             try:
                 totem_surf = self.font_small.render(totem_repr, True, totem.couleur)
@@ -472,12 +474,15 @@ class Game:
                 totem_surf = self.font_small.render(totem_repr, True, WHITE)
             surface.blit(totem_surf, (x_offset + 5, y_offset))
             y_offset += 16
+            # Limiter l'affichage si nécessaire (ici on n'affiche que les 9 premiers)
             if i >= 8: break
         y_offset += 10
 
-        player_info = self.font_small.render(f"Votre Couleur: {player.couleur}", True, WHITE)
+        # Affichage des informations personnelles du joueur
+        player_info = self.font_small.render(f"Votre Couleur: {get_color_name(player.couleur)}", True, WHITE)
         surface.blit(player_info, (x_offset, y_offset))
         y_offset += 16
+
         victory_met = player.check_victory_conditions()
         victory_text = "Conditions Remplies: OUI" if victory_met else "Conditions Remplies: NON"
         victory_info = self.font_small.render(victory_text, True, GREEN if victory_met else RED)
@@ -489,20 +494,16 @@ class Game:
         surface.blit(header, (x_offset, y_offset))
         y_offset += 16
         for color in SYSTEM_COLORS:
-            # Vérifier s'il existe un système capitale de cette couleur révélé
-            revealed = False
-            for system in self.game_board.systems:
-                if system.est_capitale and system.couleur == color and system.revealed:
-                    revealed = True
-                    break
+            # Vérifier s'il existe un système Capitale de cette couleur qui a été révélé
+            revealed = any(system.est_capitale and system.couleur == color and system.revealed
+                           for system in self.game_board.systems)
             if revealed:
-                # Afficher la faction du haut du rack et le total des totems restants
                 rack = self.system_racks.get(color)
                 top_faction = rack['faction_cards'][0].faction_id if rack and rack['faction_cards'] else "N/A"
                 totem_count = len(rack['totems']) if rack else 0
-                info_text = f"{color}: {top_faction} - {totem_count} totems"
+                info_text = f"{get_color_name(color)}: {top_faction} - {totem_count} totems"
             else:
-                info_text = f"{color}: non-révélé"
+                info_text = f"{get_color_name(color)}: non-révélé"
             info_surf = self.font_small.render(info_text, True, WHITE)
             surface.blit(info_surf, (x_offset + 5, y_offset))
             y_offset += 16
@@ -513,15 +514,15 @@ class Game:
         surface.blit(action_title, (x_offset, y_offset))
         y_offset += 16
         actions_status = [
-            (f"R: Recolter", self.action_recolter_used),
-            (f"D: Deposer", self.action_deposer_used),
-            (f"I: Influencer", self.action_influencer_used),
-            (f"O: Observer", self.action_observer_used or self.observer_mode),
-            (f"Move", self.movement_used),
+            ("R: Recolter", self.action_recolter_used),
+            ("D: Deposer", self.action_deposer_used),
+            ("I: Influencer", self.action_influencer_used),
+            ("O: Observer", self.action_observer_used or self.observer_mode),
+            ("Move", self.movement_used),
         ]
         for text, used in actions_status:
-            color_status = GRAY if used else WHITE
-            status_surf = self.font_small.render(text, True, color_status)
+            status_color = GRAY if used else WHITE
+            status_surf = self.font_small.render(text, True, status_color)
             surface.blit(status_surf, (x_offset + 5, y_offset))
             y_offset += 16
 
