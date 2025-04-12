@@ -219,8 +219,8 @@ class Game:
         player = self.get_player()
 
         # Appliquer la pénalité
-        player.score = max(0, player.score - 100)
-        print(f"Pénalité de fin de tour : -100 points. Score actuel : {player.score}")
+        player.score = max(0, player.score - 200)
+        print(f"Pénalité de fin de tour : -200 points. Score actuel : {player.score}")
 
         self.start_turn()
 
